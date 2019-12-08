@@ -119,6 +119,13 @@ main .holder{
 	text-transform: capitalize;
 	white-space: nowrap;
 }
+.char a{
+	display: inline-block;
+	border:1px solid #555;
+	padding: 2px 4px;
+	margin: 2px;
+}
+
 /***** Start Top Navbar Style ******/
 .topnav {
 	background-color: #aaa;

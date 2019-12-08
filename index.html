@@ -4,34 +4,33 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<!-- <title><data:blog.title/></title>-->
 <title>IPTV</title>
 <meta content='Watch free online TV stations from all over the world. Find the best free Internet TV, and live web TV on a-ztv.com' name='description'/>
-<!--b:skin><![CDATA[]]></b:skin-->
-<link  href="//a-ztv.com/css/style.css" rel="stylesheet" type="text/css">
-<script src="//a-ztv.com/js/tiny.js"> </script>
-<script src="//a-ztv.com/js/main.js"> </script>
-<script src="//a-ztv.com/js/clappr.min.js"> </script>
-<script src="//a-ztv.com/js/blazy.min.js"> </script>
+<base href="//localhost/tvapp/" /> <!-- a-ztv.com OR localhost/tvapp />-->
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script src="js/tiny.js"> </script>
+<script src="js/main.js"> </script>
+<script src="js/clappr.min.js"> </script>
+<script src="js/blazy.min.js"> </script>
 </head>
 <body>
 	<header>
 		<div class='holder'>
-			<a href='/' class='logo'><img src='//a-ztv.com/img/iptv.png'/></a>
-			<h1><a href='/'>Global live TV Channels</a></h1>
+			<a href='./' class='logo'><img src='./img/iptv.png'/></a>
+			<h1><a href='./'>Global live TV Channels</a></h1>
 		</div>
 	</header>
 	<nav class='topnav'>
 		<div class='holder'>
 			<a class='collapse'>&#9776;</a>
 			<ul><!--<a class='collapse' href='javascript:void(0)'>&#9776;</a><b class='ico fh'>&#10143;</b>-->
-				<li><a class='btn' href='/'>Home</a></li>
-				<li><a class='btn' href='/event'>Live Events</a></li>
-				<li><a class='btn' href='/livetv'>TV Channels</a></li>
-				<li><a class='btn' href='/movie'>Movies</a></li>
-				<li><a class='btn' href='/serial'>TV Serials</a></li>
-				<li><a class='btn' href='/music'>Musics</a></li>				
-				<li><a class='btn' href='/radio'>Radios</a></li>
+				<li><a class='btn' href='./'>Home</a></li>
+				<li><a class='btn' href='./event'>Live Events</a></li>
+				<li><a class='btn' href='./livetv'>TV Channels</a></li>
+				<li><a class='btn' href='./movie'>Movies</a></li>
+				<li><a class='btn' href='./serial'>TV Serials</a></li>
+				<li><a class='btn' href='./music'>Musics</a></li>				
+				<li><a class='btn' href='./radio'>Radios</a></li>
 			</ul>
 			<div class='search'>
 				<form><input name='search' placeholder='Search..' type='text'/></form>
@@ -92,97 +91,83 @@
 		<div class='holder'>
 			<div class='row'>
 				<ul>
-					<li><a href='#'>policy</a></li>
-					<li><a href='#'>Disclamer</a></li>
-					<li><a href='#'>Disclamer</a></li>
+					<li><a href='./'>policy</a></li>
+					<li><a href='./'>Disclamer</a></li>
+					<li><a href='./'>Disclamer</a></li>
 				</ul>
 			</div>
-			<div class='foot left'><a href='/'>Copyright &#169; 2019</a></div>
+			<div class='foot left'><a href='./'>Copyright &#169; 2019</a></div>
 			<div class='foot right'>
 				<ul>
-					<li><a href='/'>link 1</a></li>
-					<li><a href='/'>link 2</a></li>
-					<li><a href='/'>link 3</a></li>
+					<li><a href='./'>link 1</a></li>
+					<li><a href='./'>link 2</a></li>
+					<li><a href='./'>link 3</a></li>
 				</ul>
 			</div>
 		</div>
 	</footer>
 <script>//<![CDATA[
-var i, j, k, w=window, d=document, url=location;
-url.paths = url.pathname.split( '/' ); // url=w.location.href.replace(/\/$/, "");
-url.pram  = arr2obj(url.search.substr(1).split('&'));
-log('location: '+url);
+var i, html, w=window, d=document, url=location, ctrl,
+tvcdn   = '//cdn.statically.io/gh/sphp/tvapp/master/',
+baseUrl = d.querySelector('base').href,
+baseDir = baseUrl.replace(url.origin, '');
+url.paths = url.pathname.replace(baseDir,'').replace(/^\/+/,'').replace(/\/$/,'').split( '/' );
+url.prams = arr2obj(url.search.substr(1).split('&'));
+url.base  = baseUrl;
 
-d.head.innerHTML=d.head.innerHTML+"<base href='" + url + "' />";
+log(url);
 
-//var baseUrl = loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/" + phpBaseUrl;
-
-alert('baseUrl: '+store('baseUrl'));
-
-
-log('host: '+url.host);
-log('pathname: '+url.pathname);
-log('search: '+url.search);
-log('pram: '+url.pram);
-log('baseUrl: '+store('baseUrl'));
-
-
-var i,wiw=w.innerWidth, wih=w.innerHeight, baseURL=uri().protocol+'//'+uri().host,path=uri().pathname;
 _('.collapse').on('click',function(){
 	_('.topnav ul').toggleClass('list');
 });
+
 _('input[name="search"]').on('keyup',function(){
 	filter(this.value, '.wrapper .box')
 });
 
-_('a[href="/"]').attr('href',baseURL);
 
-window.onscroll = function(){
+w.onscroll = function(){
 	this.scrollY > _('header').elms[0].offsetHeight ? _('.topnav').addClass('top-fixed') : _('.topnav').removeClass('top-fixed');
 };
 
-var prm = uri().param, p, q, requrl, cat, loc, lan, limit, sort, order, html, page, list, pagination, totalPage=1,
-iptvcdn = 'https://cdn.statically.io/gh/sphp/iptv/master/',
-limit   = _('.wrapper .box').length,
-apiBase = '//a-ztv.com/api/ajax.php?',
-imgBase = '//a-ztv.com/img/';
-jsBase  = '//a-ztv.com/js/';
-cssBase = '//a-ztv.com/css/';
-/*
-# q   = search (search query)
-# loc = country (e.g.: bd, in, us, gb)
-# cat = category (e.g.: news, sports, kids, movies)
-# typ = type (e.g.: livetv, movie, serial, radio)
-# lan = language (e.g.: bn, en, ru, hi)
-# rat = rating (e.g.: high, mid, low)
-# pop = popularity (e.g.: 4.7, 5.0, 3.2)
-# ord = order (e.g.: aphabetical, rating, popularity)
-*/
-if(url===baseURL){
-	_('.topnav a[href="'+baseURL+'"]').addClass('active');
+if(url.href===baseUrl || url.href.replace(/\/$/,'')===url.origin){
+	_('.topnav a[href="./"]').addClass('active');
 	_('#home').removeClass('hide');
-	var api_req = apiBase + 'p=home';
-	ajax(apiBase,function(response){
+	ajax(baseUrl+'api/ajax.php',function(response){
 		//_('#home').html('response');
 	});
 }else{
-	_('.topnav a[href="'+path+'"]').addClass('active');
-	_('#'+prm.p).removeClass('hide');
-	_('#right-sidebar').removeClass('hide');
-
+	ctrl = url.paths[0];
+	_('.topnav a[href$="'+ctrl+'"]').addClass('active');
+	_('#'+ctrl).removeClass('hide');
+	_('#'+ctrl).css('min-height:400px');
 	
-	ajax(apiBase+'typ=',function(response){
-		_('#'+prm.p).html('response');
-	});
-
-	if(prm.src){
-		
-	}else if(prm.loc || prm.cat){
-
+	var alp ='<div class="char">';
+	for(i=1;i<10;i++) alp += '<a href="'+ctrl+'/?q='+i+'">'+i+'</a>';
+	alp+= '</div><div class="char">';
+	for(i=65;i<91;i++){
+		let chr = String.fromCharCode(i);
+		alp += '<a href="'+ctrl+'/?q='+chr.toLowerCase()+'">'+chr+'</a>';
 	}
+	alp+='</div>';
+	
+	_('#'+ctrl).html(alp)
+
+	if(ctrl=='livetv'){
+		html = '<div class="row"><h2>TV Channels By Country</h2>';
+		for(let key in countries)
+			html+='<a href="?loc='+key+'" title="'+countries[key]+'"><div class="box"><img src="'+tvcdn+'img/flags/png100/'+key+'.png"/><p>'+countries[key]+'</p></div></a>';
+		html += '</div><div class="row"><h2>TV Channels By Category</h2>';
+		for(let i in categories)
+			html+='<a href="?cat='+categories[i]+'"><div class="box"><img src="'+tvcdn+'img/groups/'+categories[i]+'.jpg"/><p>'+categories[i]+'</p></div></a>';
+		html+= '</div>';
+		_('#livetv').html(html)
+	}
+	ajax(baseUrl+'api/ajax.php',function(response){
+		//_('#'+prm.p).html('response');
+	});
 }
 w.onresize = function(){};
 //]]></script>
-<!--b:section id='_'/-->
 </body>
 </html>
