@@ -1,3 +1,6 @@
+function byId  (sel, doc){return  isElm(sel) ? sel : (doc||document)['getElementById'](sel)}
+function selAll(sel, doc){return isList(sel) ? sel : (doc||document)['querySelectorAll'](sel)}
+function selOne(sel, doc){return  isElm(sel) ? sel : (doc||document)['querySelector'](sel)}
 function log(arg){console.log(arg)}
 function len(arg){return Array.isArray(arg) ? arg.length : Object.keys(arg).length}
 function isSet(arg){return typeof arg !== 'undefined'}
@@ -7,21 +10,38 @@ function isObj(obj){return obj && typeof obj==='object' && obj.constructor===Obj
 function isElm(elm){return elm instanceof Element||elm instanceof HTMLDocument}
 function isList(elm){return NodeList.prototype.isPrototypeOf(elm)}
 function isHtml(str){return /<[a-z/][\s\S]*>/i.test(str)}
-function arr2obj(arr){let n, obj={}; for(n in arr){ let p = arr[n].split('='); obj[p[0]] = p[1] } return obj}
 function toElm(htm){let elm = document.createElement('div'); elm.innerHTML=htm; return elm.firstChild}
-function byId  (sel, doc){return  isElm(sel) ? sel : (doc||document)['getElementById'](sel)}
-function selAll(sel, doc){return isList(sel) ? sel : (doc||document)['querySelectorAll'](sel)}
-function selOne(sel, doc){return  isElm(sel) ? sel : (doc||document)['querySelector'](sel)}
-/*pos=beforebegin/afterbegin/beforeend/afterend*/
-function insert(elm, doc, pos){elm.insertAdjacentHTML(pos||'beforeend',doc)}
+function insert(elm, doc, pos){elm.insertAdjacentHTML(pos||'beforeend',doc)}/*pos=beforebegin/afterbegin/beforeend/afterend*/
 function append(elm, doc){isElm(doc) ? elm.appendChild(doc) : elm.innerHTML=elm.innerHTML+doc}
+function eclone(els, pos){return pos>=0 ? els[pos].cloneNode(true) : els[els.length+pos].cloneNode(true)}
+function obj2str(obj){let k,str='';for(k in obj) str += k+'='+obj[k]+'&'; return str.slice(0,-1)}
+function arr2obj(arr){let n, obj={}; for(n in arr){ let prt=arr[n].split('='); obj[prt[0]] = prt[1] } return obj}
+function uri(u){let a=document.createElement('a'); a.href=u||location.href;a.param = arr2obj(a.search.substr(1).split('&'));return a}
+function each(arr, fn){for(var i=0,l=arr.length; i<l; i++) if(fn.call(i, arr[i])===false)break}
+function attr(els, att, val){
+	if(val==void 0) return els[0].getAttribute(att);
+	each(els, function(el){
+		val ? el.setAttribute(att,val) : el.removeAttribute(att)
+	});
+}
 function on(elm, ev, fn){
 	elm.addEventListener ? elm.addEventListener(ev,fn,false) : elm.attachEvent ? elm.attachEvent("on"+ev,fn) : elm["on"+ev]=fn;
 }
 function off(elm, ev, fn){
 	elm.removeEventListener ? elm.removeEventListener(ev,fn,false) : elm.detachEvent ? elm.detachEvent("on"+ev,fn) : elm["on"+ev]=null;
 }
-function each(arr, fn){for(var i=0,l=arr.length; i<l; i++) if(fn.call(i, arr[i])===false)break}
+function addClass(el, name){
+    if(el.classList) el.classList.add(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); if(p<0) el.className=a.push(name).join(' ')}
+}
+function removeClass(el, name){
+    if(el.classList) el.classList.remove(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); if(p>-1)el.className=a.splice(p,1).join(' ')}
+}
+function toggleClass(el, name){
+    if(el.classList) el.classList.toggle(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); el.className=(p<0? a.push(name) : a.splice(p,1)).join(' ')}
+}
 function tag(tag, att, htm){
 	let elm=document.createElement(tag);
 	att=isArr(att) ? arr2obj(att) : att;
@@ -29,12 +49,6 @@ function tag(tag, att, htm){
 	else if(htm==void 0) htm = att;
 	if(isSet(htm)) isStr(htm) ? elm.innerHTML=htm:elm.appendChild(htm);
 	return elm;
-}
-function attr(els, att, val){
-	if(val==void 0) return els[0].getAttribute(att);
-	each(els, function(el){
-		val ? el.setAttribute(att,val) : el.removeAttribute(att)
-	});
 }
 function ajax(u,fn,d,m){
 	var xh=new XMLHttpRequest();
@@ -58,21 +72,6 @@ function filter(val, elms, start){
       }
    })
 }
-function addClass(el, name){
-    if(el.classList) el.classList.add(name);
-    else{let a=el.className.split(' '),p=a.indexOf(name); if(p<0) el.className=a.push(name).join(' ')}
-}
-function removeClass(el, name){
-    if(el.classList) el.classList.remove(name);
-    else{let a=el.className.split(' '),p=a.indexOf(name); if(p>-1)el.className=a.splice(p,1).join(' ')}
-}
-function toggleClass(el, name){
-    if(el.classList) el.classList.toggle(name);
-    else{let a=el.className.split(' '),p=a.indexOf(name); el.className=(p<0? a.push(name) : a.splice(p,1)).join(' ')}
-}
-function eclone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
-function uri(u){let a=document.createElement('a'); a.href=u||location.href;a.param = arr2obj(a.search.substr(1).split('&'));return a}
-function obj2url(obj){let k,str='';for(k in obj)str += k+'='+obj[k]+'&'; return str.slice(0,-1)}
 /*****	Super Dyanmic Dom Element Object	*****/
 var Dom = function(sel,doc){
 	this.sel = sel||document;
@@ -82,6 +81,7 @@ var Dom = function(sel,doc){
     for (var i=0, l = els.length; i < l; i++) this[i] = els[i];
 },	dom = Dom.prototype;
 S=function(sel,doc){return new Dom(sel,doc)}
+
 dom.each  = function(fn){each(this,fn); return this}
 dom.append= function(doc){this.each(function(el){append(el, doc)}); return this}
 dom.insert= function(doc, pos){this.each(function(el){insert(el, doc, pos)}); return this}
