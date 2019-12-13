@@ -1,25 +1,40 @@
-function log(v){console.log(v)}
-function len(v){return isarr(v)?v.length:Object.keys(v).length}
-function isset(a){return typeof a !== 'undefined'}
-function isarr(a){return a && Array.isArray(a)}
-function isstr(s){return s && typeof(s)==='string'||s instanceof String}
-function isobj(o){return a && typeof a==='object' && a.constructor===Object}
-function iselm(e){return e instanceof Element||e instanceof HTMLDocument}
-function islist(e){return NodeList.prototype.isPrototypeOf(e)}
-function ishtml(s){return /<[a-z/][\s\S]*>/i.test(s)}
-function arr2obj(a){let i,o={};for(i in a){let p=a[i].split('=');o[p[0]]=p[1]}return o}
-function toelm(a){let e=document.createElement('div'); e.innerHTML=a;return e.firstChild}
-function selall(s,doc){return islist(s)?s:(doc||document)['querySelectorAll'](s)}
-function selbid(s,doc){return  iselm(s)?s:(doc||document)['getElementById'](s)}
-function select(s,doc){return  iselm(s)?s:(doc||document)['querySelector'](s)}
-function text(s){return document.createTextNode(s)}
+function log(arg){console.log(arg)}
+function len(arg){return Array.isArray(arg) ? arg.length : Object.keys(arg).length}
+function isSet(arg){return typeof arg !== 'undefined'}
+function isArr(arr){return arr && Array.isArray(arr)}
+function isStr(str){return str && typeof(str)==='string'||str instanceof String}
+function isObj(obj){return obj && typeof obj==='object' && obj.constructor===Object}
+function isElm(elm){return elm instanceof Element||elm instanceof HTMLDocument}
+function isList(elm){return NodeList.prototype.isPrototypeOf(elm)}
+function isHtml(str){return /<[a-z/][\s\S]*>/i.test(str)}
+function arr2obj(arr){let n, obj={}; for(n in arr){ let p = arr[n].split('='); obj[p[0]] = p[1] } return obj}
+function toElm(htm){let elm = document.createElement('div'); elm.innerHTML=htm; return elm.firstChild}
+function byId  (sel, doc){return  isElm(sel) ? sel : (doc||document)['getElementById'](sel)}
+function selAll(sel, doc){return isList(sel) ? sel : (doc||document)['querySelectorAll'](sel)}
+function selOne(sel, doc){return  isElm(sel) ? sel : (doc||document)['querySelector'](sel)}
+/*pos=beforebegin/afterbegin/beforeend/afterend*/
+function insert(elm, doc, pos){elm.insertAdjacentHTML(pos||'beforeend',doc)}
+function append(elm, doc){isElm(doc) ? elm.appendChild(doc) : elm.innerHTML=elm.innerHTML+doc}
+function on(elm, ev, fn){
+	elm.addEventListener ? elm.addEventListener(ev,fn,false) : elm.attachEvent ? elm.attachEvent("on"+ev,fn) : elm["on"+ev]=fn;
+}
+function off(elm, ev, fn){
+	elm.removeEventListener ? elm.removeEventListener(ev,fn,false) : elm.detachEvent ? elm.detachEvent("on"+ev,fn) : elm["on"+ev]=null;
+}
+function each(arr, fn){for(var i=0,l=arr.length; i<l; i++) if(fn.call(i, arr[i])===false)break}
 function tag(tag, att, htm){
 	let elm=document.createElement(tag);
-	att=Array.isArray(att)?arr2obj(att):att;
-	if(typeof(att)!='string')for(let key in att)elm.setAttribute(key,att[key]);
-	else if(htm==void 0)htm=att;
-	typeof(htm)=='string'?elm.innerHTML=htm:append(elm,htm);
+	att=isArr(att) ? arr2obj(att) : att;
+	if(!isStr(att)) for(let key in att) elm.setAttribute(key, att[key]);
+	else if(htm==void 0) htm = att;
+	if(isSet(htm)) isStr(htm) ? elm.innerHTML=htm:elm.appendChild(htm);
 	return elm;
+}
+function attr(els, att, val){
+	if(val==void 0) return els[0].getAttribute(att);
+	each(els, function(el){
+		val ? el.setAttribute(att,val) : el.removeAttribute(att)
+	});
 }
 function ajax(u,fn,d,m){
 	var xh=new XMLHttpRequest();
@@ -28,37 +43,6 @@ function ajax(u,fn,d,m){
 	xh.onreadystatechange=function(){if(this.readyState==4&&this.status==200)fn(this.responseText)};
 	xh.send(d);
 }
-function html(es,v){
-	if(v==void 0)return es[0].innerHTML;
-	each(es,function(e){e.innerHTML=v});
-}
-function attr(es,at,v){
-	if(v==void 0)return es[0].getAttribute(at);
-	each(es, function(e){
-		v ? e.setAttribute(at,v) : e.removeAttribute(at)
-	});
-}
-function css(es, p, v){
-	each(es, function(e){
-		v!==void 0 ? e.style[p]=v : e.style=p
-	});
-}
-function off(es,ev,f){
-	each(es, function(e){
-		e.removeEventListener?e.removeEventListener(ev,f,false):e.detachEvent?e.detachEvent("on"+ev,f):e["on"+ev]=null;
-	});
-}
-function on(es,ev,fn){
-	each(es, function(e){
-		e.addEventListener?e.addEventListener(ev,fn,false):e.attachEvent?e.attachEvent("on"+ev,fn):e["on"+ev]=fn
-	});
-}
-//loop with selector
-function loop(e,fn){e=iselm(e)?[e]:selall(e);for(let n=0,l=len(e); n<l; n++) fn(e[n],n)}
-function each(O,fn){for(let n=0,l=len(O);n<l;n++)fn(O[n],n)}
-function append(p,c){select(p).appendChild(ishtml(c)?toelm(c):select(c))}
-function insert(p,c){each(selall(p), function(e){e.insertAdjacentHTML('beforeend',c)})}
-
 function store(n, v){
    if(n=='clear') localStorage.clear();
    else if(v === void 0) return localStorage.getItem(n);
@@ -74,38 +58,40 @@ function filter(val, elms, start){
       }
    })
 }
+function addClass(el, name){
+    if(el.classList) el.classList.add(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); if(p<0) el.className=a.push(name).join(' ')}
+}
+function removeClass(el, name){
+    if(el.classList) el.classList.remove(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); if(p>-1)el.className=a.splice(p,1).join(' ')}
+}
+function toggleClass(el, name){
+    if(el.classList) el.classList.toggle(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); el.className=(p<0? a.push(name) : a.splice(p,1)).join(' ')}
+}
 function eclone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
 function uri(u){let a=document.createElement('a'); a.href=u||location.href;a.param = arr2obj(a.search.substr(1).split('&'));return a}
-function obj2url(obj){let k,str='';for(k in obj)str += k+'='+obj[k]+'&';return str.slice(0,-1)}
-/*****	Super Dyanmic Dom Element Parser Class	*****/
-var Js=function(a,b){this.elms=iselm(a)?[a]:selall(a)},js=Js.prototype;window.$=function(a,b){return new Js(a,b)}
-js.each=function(fn){each(this.elms,fn);return this}
-js.append=function(c){append(this.elms[0], c); return this}
-js.insert=function(c){insert(this.elms, c); return this}
-js.html=function(v){html(this.elms, v); return this}
-js.attr=function(a,v){attr(this.elms, a, v); return this}
-js.css=function(p,v){css(this.elms, p, v); return this}
-js.off=function(ev,fn){off(this.elms, ev, fn); return this}
-js.on=function(ev,fn){on(this.elms, ev, fn); return this}
-js.tag=function(tg,at,ht){append(this.elms[0],tag(tg,at,ht));return this}
-
-js.addClass = function(name){
-  this.each(function(elm){
-    if(elm.classList) elm.classList.add(name);
-    else{let a=elm.className.split(' '),p=a.indexOf(name);if(p<0)elm.className=a.push(name).join(' ')}
-  });return this;
-}
-js.removeClass = function(name){
-  this.each(function(elm){
-    if(elm.classList) elm.classList.remove(name);
-    else{let a=elm.className.split(' '),p=a.indexOf(name);if(p>-1)elm.className=a.splice(p,1).join(' ')}
-  });return this;
-}
-js.toggleClass = function(name){
-  this.each(function(elm){
-    if(elm.classList) elm.classList.toggle(name);
-    else{
-      let a=elm.className.split(' '),p=a.indexOf(name);elm.className=(p<0?a.push(name):a.splice(p,1)).join(' ');
-    }
-  });return this;
-}
+function obj2url(obj){let k,str='';for(k in obj)str += k+'='+obj[k]+'&'; return str.slice(0,-1)}
+/*****	Super Dyanmic Dom Element Object	*****/
+var Dom = function(sel,doc){
+	this.sel = sel||document;
+	var els=isElm(this.sel)?this.sel:(doc||document)["querySelectorAll"](this.sel);
+	if(els.nodeType || isElm(els) || els === window) els = [els];
+    this.length = els.length;
+    for (var i=0, l = els.length; i < l; i++) this[i] = els[i];
+},	dom = Dom.prototype;
+S=function(sel,doc){return new Dom(sel,doc)}
+dom.each  = function(fn){each(this,fn); return this}
+dom.append= function(doc){this.each(function(el){append(el, doc)}); return this}
+dom.insert= function(doc, pos){this.each(function(el){insert(el, doc, pos)}); return this}
+dom.on    = function(ev, fn){this.each(function(el){ on(el,ev,fn)}); return this}
+dom.off   = function(ev, fn){this.each(function(el){off(el,ev,fn)}); return this}
+dom.tag   = function(tg, at, ht){this.each(function(el){append(el, tag(tg, at, ht))}); return this}
+dom.css   = function(pro, val){this.each(function(el){val!==void 0 ? el.style[pro]=val : el.style=pro}); return this}
+dom.attr  = function(att, val){if(val===void 0) return this[0].getAttribute(att); attr(this, att, val); return this}
+dom.val   = function(val){if(val===void 0)return this[0].value;this.each(function(el){el.value=val}); return this}
+dom.html  = function(htm){if(htm===void 0)return this[0].innerHTML;this.each(function(el){el.innerHTML=htm}); return this}
+dom.addClass = function(cName){this.each(function(el){addClass(el, cName)}); return this}
+dom.removeClass = function(cName){this.each(function(el){removeClass(el, cName)}); return this}
+dom.toggleClass = function(cName){this.each(function(el){toggleClass(el, cName)}); return this}
