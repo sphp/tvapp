@@ -2,6 +2,7 @@ function byId(s,d){return isElm(s)?s:(d||document)['getElementById'](s)}
 function selOne(s,d){return isElm(s)?s:(d||document)['querySelector'](s)}
 function selAll(s,d){return isList(s)?s:(d||document)['querySelectorAll'](s)}
 function log(a){console.log(a)}
+function str(v){return isElm(v) ? v.outerHTML : v.toString()}
 function len(a){return Array.isArray(a)?a.length:Object.keys(a).length}
 function isSet(a){return typeof(a) !=='undefined'}
 function isArr(a){return a && Array.isArray(a)}
@@ -11,7 +12,7 @@ function isElm(e){return e instanceof Element||e instanceof HTMLDocument}
 function isList(e){return NodeList.prototype.isPrototypeOf(e)}
 function isHtml(t){return /<[a-z/][\s\S]*>/i.test(t)}
 function toElm(h){let e=document.createElement('div');e.innerHTML=h;return e.firstChild;}
-function insert(e,d,p){e.insertAdjacentHTML(p||'beforeend',d)}/*p=beforebegin/afterbegin/beforeend/afterend*/
+function insert(e,d,p){e.insertAdjacentHTML(p||'beforeend',d)} /*p=beforebegin/afterbegin/beforeend/afterend*/
 function append(e,d){isElm(d)?e.appendChild(d):e.innerHTML=e.innerHTML+d}
 function eClone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
 function obj2str(o){let k,t='';for(k in o)t +=k+'='+o[k]+'&';return t.slice(0,-1)}
@@ -33,12 +34,12 @@ function tag(t,at,h){
 	if(isSet(h))isStr(h)?e.innerHTML=h:e.appendChild(h);
 	return e;
 }
-function ajax(u,f,d,m){
+function ajax(u,f,data,m){
 	var xh=new XMLHttpRequest();
-	xh.open((m||(d?'POST':'GET')),u,true);
+	xh.open((m||(data?'POST':'GET')),u,true);
 	xh.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=UTF-8');
 	xh.onreadystatechange=function(){if(this.readyState==4&&this.status==200)f(this.responseText)};
-	xh.send(d);
+	xh.send(data);
 }
 function filter(e,v,start){
 	let txt=e.textContent||e.innerText;
@@ -47,16 +48,13 @@ function filter(e,v,start){
 		else e.style.display=txt.toLowerCase().indexOf(v.toLowerCase())>-1?'':'none';
 	}
 }
-var j=J.prototype;
-class J{
-	constructor(s, d){
-		this.s = s || document
-		var e = isElm(this.s) ? this.s : (d || document)["querySelectorAll"](this.s)
-		if (e.nodeType || isElm(e) || e === window)e = [e]
-		this.length = e.length
-		for (var i = 0, l = e.length; i < l; i++) this[i] = e[i]
-	}
-}
+var J = function(sel,doc){
+	this.sel = sel||document;
+	var els=isElm(this.sel) ? this.sel :  (doc||document)["querySelectorAll"](this.sel);
+	if(els.nodeType || isElm(els) || els === window) els = [els];
+    this.length = els.length;
+    for (var i=0, l = els.length; i < l; i++) this[i] = els[i];
+},	j = J.prototype;
 S=function(s,d){return new J(s,d)}
 j.each=function(f){each(this,f);return this}
 j.append=function(d){this.each(function(el){append(el,d)});return this}
