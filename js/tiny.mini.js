@@ -16,7 +16,7 @@ function insert(e,d,p){e.insertAdjacentHTML(p||'beforeend',d)} /*p=beforebegin/a
 function append(e,d){isElm(d)?e.appendChild(d):e.innerHTML=e.innerHTML+d}
 function eClone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
 function obj2str(o){let k,t='';for(k in o)t +=k+'='+o[k]+'&';return t.slice(0,-1)}
-function arr2obj(a){let i,o={};for(i in a){let prt=a[i].split('=');o[prt[0]]=prt[1]}return o}
+function arr2obj(a){let i,o={};for(i in a){let prt=a[i].split('/=(.+)/');o[prt[0]]=prt[1]}return o}
 function uri(u){let a=document.createElement('a');a.href=u||location.href;a.param=arr2obj(a.search.substr(1).split('&'));return a}
 function each(a,f){for(let i=0,l=a.length;i<l;i++)if(f.call(i,a[i])===false)break}
 function attr(e,a,v){if(v==void 0)return e[0].getAttribute(a);each(e,function(el){v?el.setAttribute(a,v):el.removeAttribute(a)})}
