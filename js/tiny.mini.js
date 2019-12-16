@@ -16,6 +16,9 @@ function insert(e,d,p){e.insertAdjacentHTML(p||'beforeend',d)} /*p=beforebegin/a
 function append(e,d){isElm(d)?e.appendChild(d):e.innerHTML=e.innerHTML+d}
 function eClone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
 function obj2str(o){let k,t='';for(k in o)t +=k+'='+o[k]+'&';return t.slice(0,-1)}
+function objTost(O){
+	let st='';loop(O,function(k,v){st+= k+'='+v+'&'});return st.slice(0,-1);
+}
 function arr2obj(a){let i,o={};for(i in a){let pos = a[i].indexOf('=');o[a[i].slice(0,pos)]=a[i].slice(pos+1)}return o}
 function loop(a,f){for(let k in a)if(a.hasOwnProperty(k))f(k,a[k])}
 function _each(a,f){for(let i=0,l=len(a); i<l; i++) if(f.call(i,a[i])===false)break}
@@ -40,50 +43,42 @@ function url(){
 //function uri(u){let a=document.createElement('a');a.href=u||location.href;a.param=arr2obj(a.search.substr(1).split('&'));return a}
 function tag(t,at,h){
 	let e=document.createElement(t);
-	at= isarr(at) ? arr2obj(at) : at;
+	at = isarr(at) ? arr2obj(at) : at;
 	if(!isstr(at))for(let key in at)e.setAttribute(key,at[key]);
 	else if(h==void 0)h=at;
 	if(isset(h))isstr(h)?e.innerHTML=h:e.appendChild(h);
 	return e;
 }
-function ajax(){
-	var type = {html:"text/html",text:"text/plain",xml :"application/xml,text/xml",json:"application/json,text/javascript"},
+function http(){
+	var dt = {html:"text/html",text:"text/plain",xml :"application/xml,text/xml",json:"application/json,text/javascript"},
 	C = {
-		url : location.href,
+		url  : location.href,
+		type : 'GET',
 		data : null,
 		async : !0,
-		error  : function(x){log(x.responseText)},
-		method  : 'GET',
-		success  : function(r){log(r)},
-		dataType  : type.text,
-		contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
+		dataType  : dt.text,
+		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+		func : function(r){log(r)},
+		error: function(x){log(x.responseText)}
 	};
-	loop(arguments[0],function(k,v){C[k]=v})
+	loop(arguments[0],function(k,v){C[k]=k=='dataType'?dt[v]:v})
+	if(!isstr(C.data)) C.data = objTost(C.data)
+	if(C.data && C.type=='GET' && C.url.indexOf('?')==-1 ) C.url += '?'+C.data
 	var X=new XMLHttpRequest()
-	X.open(C.method, C.url, C.async)
+	X.onreadystatechange=function(){if(this.readyState==4&&this.status==200) C.func(this.responseText)}
+	X.onerror=function(){C.error(X.responseText)}
+	X.open(C.type, C.url, C.async)
 	X.setRequestHeader('Content-Type',C.contentType)
 	X.setRequestHeader('Accept',C.dataType)
-	X.onreadystatechange=function(){if(this.readyState==4&&this.status==200) C.success(this.responseText)}
-	X.onerror=function(){C.error(X.responseText)}
 	X.send(C.data)
 }
-function ajax2(u,f,data,m){
+function ajax(u,f,data,m){
 	var xh=new XMLHttpRequest();
+	xh.onreadystatechange=function(){if(this.readyState==4&&this.status==200)f(this.responseText)};
 	xh.open((m||(data?'POST':'GET')),u,true);
 	xh.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=UTF-8');
-	xh.onreadystatechange=function(){if(this.readyState==4&&this.status==200)f(this.responseText)};
 	xh.send(data);
 }
-
-/**
- * Remove elements
- *
- * @param e	(list of nodes)		List of element
- * @param v	(string)			Search string
- * @param start	(bool)			Where to find (startsWith or anywhere)
- *
- * @return void					Nothing
- */
 function filter(e,v,start){
 	let txt=e.textContent||e.innerText;
 	if(txt){
@@ -91,23 +86,6 @@ function filter(e,v,start){
 		else e.style.display=txt.toLowerCase().indexOf(v.toLowerCase())>-1?'':'none';
 	}
 }
-function pagination(totalPage, thisPage){
-   var _url = url.replace(/&page=\d+/g,''),first,last;
-   if(_url.substr(_url.length-1)=='&') _url = _url.slice(0, -1);
-   thisPage = Number(thisPage);
-   html = '';
-   for (var i = 1; i <= totalPage; i++){
-      let start = (thisPage>totalPage-4) ? thisPage-3-(3-(totalPage-thisPage)) : thisPage-3,
-            end = (thisPage<4) ? thisPage+3+4-thisPage : thisPage+3;
-      if( i >= start && i <= end){
-         first = (thisPage>4 && totalPage>7) ? '<a href="'+_url+'&page='+1+'">first</a>' : '';
-         html += '<a href="'+_url+'&page='+i+'"'+ (i==thisPage? ' class="active"' : '') +'>'+i+'</a>';
-         last = (i==totalPage) ? '' : '<a href="'+_url+'&page='+totalPage+'">last</a>';
-      }
-   }
-   return '<div class="row paging">'+first+html+last+'</div>';
-}
-
 // DOM elemenets class
 var J = function(sel,doc){
 	this.sel = sel||document;
@@ -131,3 +109,11 @@ j.addClass=function(n){this.each(function(el){addClass(el,n)});return this}
 j.removeClass=function(n){this.each(function(el){removeClass(el,n)});return this}
 j.toggleClass=function(n){this.each(function(el){toggleClass(el,n)});return this}
 j.filter=function(v,st){this.each(function(el){filter(el,v,st)});return this}
+
+
+/*
+var elements = document.querySelectorAll(selector);
+Array.prototype.forEach.call(elements, function(el, i){
+	//do something
+});
+*/
