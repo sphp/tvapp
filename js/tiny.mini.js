@@ -47,18 +47,18 @@ function tag(t,at,h){
 	return e;
 }
 function ajax(){
-	var typ={html:"text/html",text:"text/plain",xml :"application/xml,text/xml",json:"application/json,text/javascript"},
-	C={
-		method : 'GET',
+	var type = {html:"text/html",text:"text/plain",xml :"application/xml,text/xml",json:"application/json,text/javascript"},
+	C = {
 		url : location.href,
-		async : !0,
 		data : null,
-		dataType : typ.text,
-		contentType : 'application/x-www-form-urlencoded; charset=UTF-8',
-		success : function(r){console.log(r)},
-		error : function(x){console.log(x.responseText)}
+		async : !0,
+		error  : function(x){log(x.responseText)},
+		method  : 'GET',
+		success  : function(r){log(r)},
+		dataType  : type.text,
+		contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
 	};
-	loop(arguments[0], function(k, v){ C[k] = v })
+	loop(arguments[0],function(k,v){C[k]=v})
 	var X=new XMLHttpRequest()
 	X.open(C.method, C.url, C.async)
 	X.setRequestHeader('Content-Type',C.contentType)
