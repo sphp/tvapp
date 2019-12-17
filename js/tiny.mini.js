@@ -1,35 +1,75 @@
-function byid(s,d){return isElm(s)?s:(d||document)['getElementById'](s)}
-function selone(s,d){return isElm(s)?s:(d||document)['querySelector'](s)}
-function selall(s,d){return isList(s)?s:(d||document)['querySelectorAll'](s)}
-function log(a){console.log(a)}
-function str(v){return isElm(v)?v.outerHTML:v.toString()}
-function isset(a){return typeof a!=='undefined'}
-function isarr(a){return Array.isArray(a)}
-function isstr(t){return typeof t==='string'||t instanceof String}
-function isobj(o){return typeof o==='object' && o.constructor===Object}
-function isElm(e){return e instanceof Element||e instanceof HTMLDocument}
-function len(a){return isstr(a)||Array.isArray(a)?a.length:Object.keys(a).length}
-function isList(e){return NodeList.prototype.isPrototypeOf(e)}
-function isHtml(t){return /<[a-z/][\s\S]*>/i.test(t)}
-function toElm(h){let e=document.createElement('div');e.innerHTML=h;return e.firstChild;}
-function insert(e,d,p){e.insertAdjacentHTML(p||'beforeend',d)} /*p=beforebegin/afterbegin/beforeend/afterend*/
-function append(e,d){isElm(d)?e.appendChild(d):e.innerHTML=e.innerHTML+d}
-function eClone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
-function obj2str(o){let k,t='';for(k in o)t +=k+'='+o[k]+'&';return t.slice(0,-1)}
-function objTost(O){
-	let st='';loop(O,function(k,v){st+= k+'='+v+'&'});return st.slice(0,-1);
-}
-function arr2obj(a){let i,o={};for(i in a){let pos = a[i].indexOf('=');o[a[i].slice(0,pos)]=a[i].slice(pos+1)}return o}
+function byid(sel,doc){return iselm(sel) ? sel : (doc||document)['getElementById'](sel)}
+function selall(sel,doc){return islist(sel)? sel : (doc||document)['querySelectorAll'](sel)}
+function selone(sel,doc){return iselm(sel) ? sel : (doc||document)['querySelector'](sel)}
+
+function log(arg){console.log(arg)}
+function len(arg){return isstr(a)||Array.isArray(arg) ? arg.length : Object.keys(arg).length}
+function isset(arg){return typeof arg !== 'undefined'}
+function isarr(arr){return arr && Array.isArray(arr)}
+function isstr(str){return str && typeof(str)==='string'||str instanceof String}
+function str(v){return iselm(v)?v.outerHTML:v.toString()}
+function isobj(obj){return obj && typeof obj==='object' && obj.constructor===Object}
+function iselm(elm){return elm instanceof Element||elm instanceof HTMLDocument}
+function islist(elm){return NodeList.prototype.isPrototypeOf(elm)}
+function ishtml(str){return /<[a-z/][\s\S]*>/i.test(str)}
+function arr2obj(arr){let n, obj={}; for(n in arr){ let p = arr[n].split('='); obj[p[0]] = p[1] } return obj}
+function toelm(htm){let elm = document.createElement('div'); elm.innerHTML=htm; return elm.firstChild}
+function insert(elm,doc,pos){elm.insertAdjacentHTML(pos||'beforeend',doc)}/*pos=beforebegin/afterbegin/beforeend/afterend*/
+function append(elm,doc){iselm(doc) ? elm.appendChild(doc) : elm.innerHTML=elm.innerHTML+doc}
 function loop(a,f){for(let k in a)if(a.hasOwnProperty(k))f(k,a[k])}
-function _each(a,f){for(let i=0,l=len(a); i<l; i++) if(f.call(i,a[i])===false)break}
-function each(a,f){for(let k in a)if(a.hasOwnProperty(k))f(a[k],k)}
-function attr(e,a,v){if(v==void 0)return e[0].getAttribute(a);each(e,function(el){v?el.setAttribute(a,v):el.removeAttribute(a)})}
-function on(e,ev,f){e.addEventListener?e.addEventListener(ev,f,false):e.attachEvent?e.attachEvent("on"+ev,f):e["on"+ev]=f}
-function off(e,ev,f){e.removeEventListener?e.removeEventListener(ev,f,false):e.detachEvent?e.detachEvent("on"+ev,f):e["on"+ev]=null}
-function addClass(e,n){if(e.classList)e.classList.add(n);else{let a=e.className.split(' '),p=a.indexOf(n);if(p<0)e.className=a.push(n).join(' ')}}
-function removeClass(e,n){if(e.classList)e.classList.remove(n);else{let a=e.className.split(' '),p=a.indexOf(n);if(p>-1)e.className=a.splice(p,1).join(' ')}}
-function toggleClass(e,n){if(e.classList)e.classList.toggle(n);else{let a=e.className.split(' '),p=a.indexOf(n);e.className=(p<0? a.push(n):a.splice(p,1)).join(' ')}}
-function store(n,v){if(n=='clear')localStorage.clear();else if(v===void 0)return localStorage.getItem(n);else if(v==='remove')localStorage.removeItem(n);else localStorage.setItem(n,v);}
+function eclone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
+function obj2str(O){let st='';loop(O,function(k,v){st+= k+'='+v+'&'});return st.slice(0,-1)}
+function arr2obj(a){let i,o={};for(i in a){let pos = a[i].indexOf('=');o[a[i].slice(0,pos)]=a[i].slice(pos+1)}return o}
+function on(elm, ev, fn){
+	elm.addEventListener ? elm.addEventListener(ev,fn,false) : elm.attachEvent ? elm.attachEvent("on"+ev,fn) : elm["on"+ev]=fn;
+}
+function off(elm, ev, fn){
+	elm.removeEventListener ? elm.removeEventListener(ev,fn,false) : elm.detachEvent ? elm.detachEvent("on"+ev,fn) : elm["on"+ev]=null;
+}
+function each(arr, fn){for(var i=0,l=arr.length; i<l; i++) if(fn.call(i, arr[i])===false)break}
+function tag(tag, att, htm){
+	let elm=document.createElement(tag);
+	att=isarr(att) ? arr2obj(att) : att;
+	if(!isstr(att)) for(let key in att) elm.setAttribute(key, att[key]);
+	else if(htm==void 0) htm = att;
+	if(isset(htm)) isstr(htm) ? elm.innerHTML=htm:elm.appendChild(htm);
+	return elm;
+}
+function attr(els, att, val){
+	if(val==void 0) return els[0].getAttribute(att);
+	each(els, function(el){
+		val ? el.setAttribute(att,val) : el.removeAttribute(att)
+	});
+}
+function ajax(u,fn,d,m){
+	var xh=new XMLHttpRequest();
+	xh.open((m||(d?'POST':'GET')),u,true);
+	xh.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=UTF-8');
+	xh.onreadystatechange=function(){if(this.readyState==4&&this.status==200)fn(this.responseText)};
+	xh.send(d);
+}
+function store(n, v){
+   if(n=='clear') localStorage.clear();
+   else if(v === void 0) return localStorage.getItem(n);
+   else if(v === 'remove') localStorage.removeItem(n);
+   else localStorage.setItem(n, v);
+}
+function addClass(el, name){
+    if(el.classList) el.classList.add(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); if(p<0) el.className=a.push(name).join(' ')}
+}
+function removeClass(el, name){
+    if(el.classList) el.classList.remove(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); if(p>-1)el.className=a.splice(p,1).join(' ')}
+}
+function toggleClass(el, name){
+    if(el.classList) el.classList.toggle(name);
+    else{let a=el.className.split(' '),p=a.indexOf(name); el.className=(p<0? a.push(name) : a.splice(p,1)).join(' ')}
+}
+function eclone(e,p){return p>=0?e[p].cloneNode(true):e[e.length+p].cloneNode(true)}
+function uri(u){let a=document.createElement('a'); a.href=u||location.href;a.param = arr2obj(a.search.substr(1).split('&'));return a}
+function obj2url(obj){let k,str='';for(k in obj)str += k+'='+obj[k]+'&'; return str.slice(0,-1)}
+
 function url(){
 	var url=location;
 	baseUrl = document.querySelector('base').href,
@@ -50,20 +90,20 @@ function tag(t,at,h){
 	return e;
 }
 function http(){
-	var dt = {html:"text/html",text:"text/plain",xml :"application/xml,text/xml",json:"application/json,text/javascript"},
+	var DT = {html:"text/html",text:"text/plain",xml :"application/xml,text/xml",json:"application/json,text/javascript"},
 	C = {
 		url  : location.href,
 		type : 'GET',
 		data : null,
-		async : !0,
-		dataType  : dt.text,
-		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 		func : function(r){log(r)},
-		error: function(x){log(x.responseText)}
+		error: function(x){log(x.responseText)},
+		async : !0,
+		dataType : DT.text,
+		contentType : 'application/x-www-form-urlencoded; charset=UTF-8'
 	};
-	loop(arguments[0],function(k,v){C[k]=k=='dataType'?dt[v]:v})
-	if(!isstr(C.data)) C.data = objTost(C.data)
-	if(C.data && C.type=='GET' && C.url.indexOf('?')==-1 ) C.url += '?'+C.data
+	loop(arguments[0],function(k,v){ C[k] = k=='dataType' ? DT[v] : v })
+	if(!isstr(C.data)) C.data = obj2str(C.data)
+	if(C.data && C.type=='GET') C.url += '?'+C.data
 	var X=new XMLHttpRequest()
 	X.onreadystatechange=function(){if(this.readyState==4&&this.status==200) C.func(this.responseText)}
 	X.onerror=function(){C.error(X.responseText)}
@@ -86,34 +126,26 @@ function filter(e,v,start){
 		else e.style.display=txt.toLowerCase().indexOf(v.toLowerCase())>-1?'':'none';
 	}
 }
-// DOM elemenets class
-var J = function(sel,doc){
+/*****	Super Dyanmic Dom Element Object	*****/
+var Dom=function(sel,doc){
 	this.sel = sel||document;
-	var els=isElm(this.sel) ? this.sel :  (doc||document)["querySelectorAll"](this.sel);
-	if(els.nodeType || isElm(els) || els === window) els = [els];
-    	this.length = els.length;
-    	for (var i=0, l = els.length; i < l; i++) this[i] = els[i];
-}, j = J.prototype;
-S=function(s,d){return new J(s,d)}
-j.each=function(f){each(this,f);return this}
-j.append=function(d){this.each(function(el){append(el,d)});return this}
-j.insert=function(d,p){this.each(function(el){insert(el,d,p)});return this}
-j.on=function(ev,f){this.each(function(el){on(el,ev,f)});return this}
-j.off=function(ev,f){this.each(function(el){off(el,ev,f)});return this}
-j.tag=function(t,at,h){this.each(function(el){append(el,tag(t,at,h))});return this}
-j.css=function(p,v){this.each(function(el){v!==void 0?el.style[p]=v:el.style=p});return this}
-j.attr=function(at,v){if(v===void 0)return this[0].getAttribute(at);attr(this,at,v);return this}
-j.vall=function(v){if(v===void 0)return this[0].value;this.each(function(el){el.value=v });return this}
-j.html=function(h){if(h===void 0)return this[0].innerHTML;this.each(function(el){el.innerHTML=h });return this}
-j.addClass=function(n){this.each(function(el){addClass(el,n)});return this}
-j.removeClass=function(n){this.each(function(el){removeClass(el,n)});return this}
-j.toggleClass=function(n){this.each(function(el){toggleClass(el,n)});return this}
-j.filter=function(v,st){this.each(function(el){filter(el,v,st)});return this}
-
-
-/*
-var elements = document.querySelectorAll(selector);
-Array.prototype.forEach.call(elements, function(el, i){
-	//do something
-});
-*/
+	var els=iselm(this.sel)?this.sel:(doc||document)["querySelectorAll"](this.sel);
+	if(els.nodeType || iselm(els) || els === window) els = [els];
+    this.length = els.length;
+    for (var i=0, l = els.length; i < l; i++) this[i] = els[i];
+},	dom = Dom.prototype;
+S=function(sel,doc){return new Dom(sel,doc)}
+dom.each  = function(fn){each(this,fn); return this}
+dom.append= function(doc){this.each(function(el){append(el, doc)}); return this}
+dom.insert= function(doc, pos){this.each(function(el){insert(el, doc, pos)}); return this}
+dom.filter= function(v,st){this.each(function(el){filter(el,v,st)});return this}
+dom.on    = function(ev, fn){this.each(function(el){ on(el,ev,fn)}); return this}
+dom.off   = function(ev, fn){this.each(function(el){off(el,ev,fn)}); return this}
+dom.tag   = function(tg, at, ht){this.each(function(el){append(el, tag(tg, at, ht))}); return this}
+dom.css   = function(pro, val){this.each(function(el){val!==void 0 ? el.style[pro]=val : el.style=pro}); return this}
+dom.attr  = function(att, val){if(val===void 0) return this[0].getAttribute(att); attr(this, att, val); return this}
+dom.val   = function(val){if(val===void 0)return this[0].value;this.each(function(el){el.value=val}); return this}
+dom.html  = function(htm){if(htm===void 0)return this[0].innerHTML;this.each(function(el){el.innerHTML=htm}); return this}
+dom.addClass = function(cName){this.each(function(el){addClass(el, cName)}); return this}
+dom.removeClass = function(cName){this.each(function(el){removeClass(el, cName)}); return this}
+dom.toggleClass = function(cName){this.each(function(el){toggleClass(el, cName)}); return this}
